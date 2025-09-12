@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Portfolio Images</title>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="300" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <br>
+    <button onclick="generateImages()">Generate All Images</button>
+    <div id="output"></div>
+
+    <script>
+        const projectImages = {
+            'contracts-roles': {
+                title: 'A few contracts, and roles across design',
+                tag: 'Productdesign',
+                icon: '🎨',
+                description: 'Abstract shapes and design elements'
+            },
+            'daiquery-notebooks': {
+                title: 'Daiquery notebooks creation then merging with bento notebooks',
+                tag: 'DataViz',
+                icon: '📊',
+                description: 'SQL/data visualization icons'
+            },
+            'meta-data-viz': {
+                title: 'Meta infra data viz framework and ai-infographics',
+                tag: 'DataViz',
+                icon: '📈',
+                description: 'Pie chart and visualization elements'
+            },
+            'myanalytics-redesign': {
+                title: 'Re-envisioning my primary product',
+                tag: 'DataViz',
+                icon: '📊',
+                description: 'Analytics dashboard elements'
+            },
+            'watson-design-guide': {
+                title: 'The creation of a design guide used across thousands of users',
+                tag: 'Productdesign',
+                icon: '📚',
+                description: 'Component system elements'
+            },
+            'apple-accessibility': {
+                title: 'Apple; accessibility and app concepts',
+                tag: 'Productdesign',
+                icon: '🍎',
+                description: 'Apple logo and accessibility icons'
+            },
+            'workplace-analytics': {
+                title: 'Workplace analytics: programs, analytics, and nudges',
+                tag: 'DataViz',
+                icon: '👥',
+                description: 'People icons and analytics elements'
+            },
+            'watson-analytics': {
+                title: 'Watson analytics early work',
+                tag: 'AI',
+                icon: '🧠',
+                description: 'AI/brain icons'
+            },
+            'teams-admin': {
+                title: 'Teams admin center',
+                tag: 'Productdesign',
+                icon: '⚙️',
+                description: 'Settings/admin icons'
+            },
+            'researching-silence': {
+                title: 'Researching silence',
+                tag: 'Productdesign',
+                icon: '🔔',
+                description: 'Bell with slash icon'
+            },
+            'topic-keyword-analysis': {
+                title: 'Topic keyword analysis redesigns',
+                tag: 'DataViz',
+                icon: '🔍',
+                description: 'Text analysis elements'
+            },
+            'navigation-update': {
+                title: 'Navigation update leads to better component system',
+                tag: 'Productdesign',
+                icon: '🧭',
+                description: 'Navigation/component elements'
+            },
+            'trusted-news-ai': {
+                title: 'Trusted news ai chrome extension',
+                tag: 'AI',
+                icon: '🛡️',
+                description: 'Shield/security icons'
+            },
+            'work-life-balance': {
+                title: 'Improving your work life balance within Office 365',
+                tag: 'Productdesign',
+                icon: '⚖️',
+                description: 'Balance/wellness icons'
+            },
+            'spss-redesign': {
+                title: 'Redesign of SPSS modeler for modernization, brand connection, and interaction improvement',
+                tag: 'DataViz',
+                icon: '📊',
+                description: 'Statistical analysis elements'
+            },
+            'grad-data-viz': {
+                title: 'Grad school data visualization work',
+                tag: 'DataViz',
+                icon: '📈',
+                description: 'Visualization elements'
+            },
+            'guide-to-galaxy': {
+                title: 'Guide to the galaxy, a mobile app concept',
+                tag: 'Productdesign',
+                icon: '🌌',
+                description: 'Space/planetarium elements'
+            },
+            'vaporize-installation': {
+                title: 'Vaporize: product design art installation',
+                tag: 'Productdesign',
+                icon: '💡',
+                description: 'Wireframe/technical elements'
+            },
+            'morphfaux-robot': {
+                title: 'Morphfaux, KUKA robot plaster research',
+                tag: 'Productdesign',
+                icon: '🤖',
+                description: 'Technical diagram elements'
+            },
+            'architecture-projects': {
+                title: 'Architecture graduate projects',
+                tag: 'Productdesign',
+                icon: '🏗️',
+                description: 'Architectural elements'
+            }
+        };
+
+        const tagColors = {
+            'Productdesign': '#667eea',
+            'DataViz': '#f093fb', 
+            'AI': '#4facfe',
+            'Music': '#43e97b',
+            'Writing': '#fa709a'
+        };
+
+        function generateImage(projectId, project) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 400, 300);
+            
+            // Get background color
+            const bgColor = tagColors[project.tag] || '#667eea';
+            
+            // Fill background
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, 400, 300);
+            
+            // Add subtle pattern overlay
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i < 400; i += 20) {
+                for (let j = 0; j < 300; j += 20) {
+                    if ((i + j) % 40 === 0) {
+                        ctx.fillRect(i, j, 10, 10);
+                    }
+                }
+            }
+            
+            // Add project icon
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(project.icon, 200, 120);
+            
+            // Add project title
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.font = 'bold 16px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Split title into lines
+            const words = project.title.split(' ');
+            const lines = [];
+            let currentLine = '';
+            
+            for (const word of words) {
+                const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > 350) {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+            
+            // Draw title lines
+            const lineHeight = 20;
+            const startY = 220 - ((lines.length - 1) * lineHeight) / 2;
+            
+            lines.forEach((line, index) => {
+                ctx.fillText(line, 200, startY + index * lineHeight);
+            });
+            
+            // Add tag indicator
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '12px Arial, sans-serif';
+            ctx.fillText(project.tag, 200, 270);
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        function generateImages() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<h3>Generated Images:</h3>';
+            
+            Object.entries(projectImages).forEach(([projectId, project]) => {
+                const imageData = generateImage(projectId, project);
+                const img = document.createElement('img');
+                img.src = imageData;
+                img.style.margin = '10px';
+                img.style.border = '1px solid #ccc';
+                
+                const link = document.createElement('a');
+                link.href = imageData;
+                link.download = `${projectId}.png`;
+                link.textContent = `Download ${projectId}.png`;
+                link.style.display = 'block';
+                link.style.marginBottom = '20px';
+                
+                const container = document.createElement('div');
+                container.appendChild(img);
+                container.appendChild(link);
+                output.appendChild(container);
+            });
+        }
+    </script>
+</body>
+</html>

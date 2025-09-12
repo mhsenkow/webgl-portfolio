@@ -1,0 +1,89 @@
+@import "tailwindcss";
+@reference "tailwindcss";
+
+:root { 
+  color-scheme: light; 
+  /* Portfolio color palette from mhsenkow.work */
+  --color-dark-olive: #5C6B3D;
+  --color-deep-navy: #1A1A4A;
+  --color-dark-gray: #6B6B6B;
+  --color-dark-red: #7A2A2A;
+  --color-dark-forest: #2A4A2A;
+  --color-light-bg: #F5F8F5;
+  --color-white: #ffffff;
+  --color-text-dark: #1a1a1a;
+}
+html, body, #__next { height: 100%; }
+body { @apply text-gray-900 antialiased; background-color: var(--color-light-bg); }
+
+/* Custom physics-based animations */
+@keyframes cardExpand {
+  0% {
+    transform: scale(0.1) rotateX(15deg);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.05) rotateX(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes cardContract {
+  0% {
+    transform: scale(1) rotateX(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.1) rotateX(-15deg);
+    opacity: 0.1;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* Apply floating animation to interactive elements */
+.hover-float:hover {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Glass morphism utilities */
+.bg-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shadow-glass {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * { 
+    animation-duration: 0.001ms !important; 
+    animation-iteration-count: 1 !important; 
+    transition-duration: 0.001ms !important; 
+  }
+}

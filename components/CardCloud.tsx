@@ -136,7 +136,7 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           y = (staggeredCategoryIndex - 2) * 1.8; // Group by category vertically
           
           // Z-axis: Featured projects float higher
-          z = project.featured ? 1.5 : 0.3;
+          z = project.featured ? 2.5 : 0.8; // Increased Z-depth
           
           // Add subtle random variation for natural feel
           x += (Math.random() - 0.5) * 0.3;
@@ -159,9 +159,9 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           
           // Z-axis: Featured projects at top, others distributed vertically
           if (project.featured) {
-            z = 3 + Math.random() * 1; // Featured projects at top
+            z = 4 + Math.random() * 2; // Featured projects at top (increased)
           } else {
-            z = (Math.random() - 0.5) * 4; // Others distributed vertically
+            z = (Math.random() - 0.5) * 6; // Others distributed vertically (increased)
           }
           
           // Add some variation within each category
@@ -171,26 +171,37 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           break;
           
         case 'spiral':
-          // Fun spiral formation - cards arranged in a simple spiral
-          const spiralRadius = 0.5 + index * 0.4; // Growing radius
-          const spiralAngle = index * 0.6; // Spiral angle
-          const spiralHeight = index * 0.15; // Rising height
+          // Full DNA 3D spiral - very noticeable and dramatic
+          const dnaRadius = 2.5; // Larger radius for more dramatic effect
+          const dnaHeight = index * 0.8; // Much more height variation
+          const dnaAngle = index * 1.2; // More turns for DNA effect
           
-          x = spiralRadius * Math.cos(spiralAngle);
-          y = spiralHeight - 2; // Center vertically
-          z = spiralRadius * Math.sin(spiralAngle);
+          // Create the main spiral
+          x = dnaRadius * Math.cos(dnaAngle);
+          z = dnaRadius * Math.sin(dnaAngle);
+          y = dnaHeight - 8; // Center vertically with more range
           
-          // Featured cards get higher positions
+          // Add DNA double-helix effect by offsetting every other card
+          if (index % 2 === 0) {
+            x *= 1.2; // Outer helix
+            z *= 1.2;
+          } else {
+            x *= 0.8; // Inner helix
+            z *= 0.8;
+            y += 0.4; // Slight height offset for double helix
+          }
+          
+          // Featured cards get even more dramatic positions
           if (project.featured) {
-            y += 2;
-            x *= 1.3;
-            z *= 1.3;
+            x *= 1.5;
+            z *= 1.5;
+            y += 3;
           }
           
           // Add some variation for natural feel
-          x += (Math.random() - 0.5) * 0.3;
-          y += (Math.random() - 0.5) * 0.2;
-          z += (Math.random() - 0.5) * 0.3;
+          x += (Math.random() - 0.5) * 0.4;
+          y += (Math.random() - 0.5) * 0.3;
+          z += (Math.random() - 0.5) * 0.4;
           break;
           
         case 'grid':
@@ -207,7 +218,7 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           y = (gridTimeIndex - 2) * 2.5;
           
           // Z-axis: Featured projects in front
-          z = project.featured ? -1 : 1;
+          z = project.featured ? -2.5 : 2; // Increased Z-depth
           
           // Add variation within each cell
           x += (Math.random() - 0.5) * 0.8;
@@ -216,28 +227,28 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           break;
           
         case 'cube':
-          // 3D cube formation - cards arranged in a proper cube
+          // 3D cube formation - cards arranged in a proper cube, more spread out
           const cubeSize = Math.ceil(Math.cbrt(projects.length));
           const cubeX = index % cubeSize;
           const cubeY = Math.floor(index / cubeSize) % cubeSize;
           const cubeZ = Math.floor(index / (cubeSize * cubeSize));
           
-          // Position cards in a cube formation
-          x = (cubeX - cubeSize / 2) * 2.2;
-          y = (cubeY - cubeSize / 2) * 2.2;
-          z = (cubeZ - cubeSize / 2) * 2.2;
+          // Position cards in a cube formation with more spacing
+          x = (cubeX - cubeSize / 2) * 3.5; // Increased from 2.2 to 3.5
+          y = (cubeY - cubeSize / 2) * 3.5; // Increased from 2.2 to 3.5
+          z = (cubeZ - cubeSize / 2) * 3.5; // Increased from 2.2 to 3.5
           
-          // Featured cards get center positions
+          // Featured cards get center positions but still spread out
           if (project.featured) {
-            x *= 0.6;
-            y *= 0.6;
-            z *= 0.6;
+            x *= 0.7; // Less dramatic centering
+            y *= 0.7;
+            z *= 0.7;
           }
           
           // Add some variation for natural feel
-          x += (Math.random() - 0.5) * 0.3;
-          y += (Math.random() - 0.5) * 0.3;
-          z += (Math.random() - 0.5) * 0.3;
+          x += (Math.random() - 0.5) * 0.5;
+          y += (Math.random() - 0.5) * 0.5;
+          z += (Math.random() - 0.5) * 0.5;
           break;
           
         default:

@@ -17,11 +17,12 @@
 import { useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { projects, Project } from '@/data/projects';
+import { Project } from '@/data/projects';
 import ProjectCard from './ProjectCard';
 import { useWindowSize } from '@/hooks/useWindowSize';
 
 interface CardCloudProps {
+  projects: Project[];
   onCardClick: (project: Project, position: { x: number; y: number; z: number }) => void;
   onCardCenter?: (position: { x: number; y: number; z: number }) => void;
   timePeriod?: string | null;
@@ -31,7 +32,7 @@ interface CardCloudProps {
   layout?: 'flat-grid' | 'staggered' | 'sphere' | 'spiral' | 'grid' | 'cube';
 }
 
-export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid' }: CardCloudProps) {
+export default function CardCloud({ projects, onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid' }: CardCloudProps) {
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [targetPositions, setTargetPositions] = useState<THREE.Vector3[]>([]);
   const [currentPositions, setCurrentPositions] = useState<THREE.Vector3[]>([]);

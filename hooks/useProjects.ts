@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { projects as seed, Project } from '@/data/projects';
+import { projects as originalSeed, Project } from '@/data/projects';
 import { useWindowSize } from './useWindowSize';
 
 export function useProjects() {
@@ -12,6 +12,10 @@ export function useProjects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number; z: number } | null>(null);
   const [focusedProject, setFocusedProject] = useState<Project | null>(null);
+  const [additionalProjects, setAdditionalProjects] = useState<Project[]>([]);
+
+  // Combine original projects with additional generated ones
+  const seed = useMemo(() => [...originalSeed, ...additionalProjects], [additionalProjects]);
 
   const projects = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,11 +132,89 @@ export function useProjects() {
     setCardPosition(null);
   };
 
-  return { 
-    projects, 
-    query, 
-    setQuery, 
-    tag, 
+  // Function to generate additional lorem ipsum projects
+  const generateAdditionalProjects = () => {
+    const loremTitles = [
+      'Lorem Ipsum Design System', 'Dolor Sit Amet Dashboard', 'Consectetur Adipiscing Analytics',
+      'Elit Sed Do Visualization', 'Eiusmod Tempor Interface', 'Incididunt Ut Labore Component',
+      'Et Dolore Magna Aliqua', 'Ut Enim Ad Minim Veniam', 'Quis Nostrud Exercitation',
+      'Ullamco Laboris Nisi', 'Ut Aliquip Ex Ea', 'Commodo Consequat Duis',
+      'Aute Irure Dolor In', 'Reprehenderit In Voluptate', 'Velit Esse Cillum Dolore',
+      'Eu Fugiat Nulla Pariatur', 'Excepteur Sint Occaecat', 'Cupidatat Non Proident',
+      'Sunt In Culpa Qui', 'Officia Deserunt Mollit', 'Anim Id Est Laborum',
+      'Sed Ut Perspiciatis', 'Unde Omnis Iste Natus', 'Error Sit Voluptatem',
+      'Accusantium Doloremque', 'Laudantium Totam Rem', 'Aperiam Eaque Ipsa',
+      'Quae Ab Illo Inventore', 'Veritatis Et Quasi', 'Architecto Beatae Vitae',
+      'Dicta Sunt Explicabo', 'Nemo Enim Ipsam', 'Voluptatem Quia Voluptas',
+      'Sit Aspernatur Aut', 'Odit Aut Fugit Sed', 'Quia Consequuntur Magni',
+      'Dolores Eos Qui', 'Ratione Voluptatem Sequi', 'Nesciunt Neque Porro',
+      'Quisquam Est Qui', 'Dolorem Ipsum Quia', 'Dolor Sit Amet',
+      'Consectetur Adipisci Velit', 'Sed Quia Non Numquam', 'Eius Modi Tempora',
+      'Incidunt Ut Labore', 'Et Dolore Magnam', 'Aliquam Quaerat Voluptatem'
+    ];
+
+    const loremSummaries = [
+      'Lorem ipsum dolor sit amet', 'Consectetur adipiscing elit', 'Sed do eiusmod tempor',
+      'Incididunt ut labore et dolore', 'Magna aliqua ut enim', 'Ad minim veniam quis',
+      'Nostrud exercitation ullamco', 'Laboris nisi ut aliquip', 'Ex ea commodo consequat',
+      'Duis aute irure dolor', 'In reprehenderit in voluptate', 'Velit esse cillum dolore',
+      'Eu fugiat nulla pariatur', 'Excepteur sint occaecat', 'Cupidatat non proident',
+      'Sunt in culpa qui officia', 'Deserunt mollit anim id', 'Est laborum sed ut',
+      'Perspiciatis unde omnis', 'Iste natus error sit', 'Voluptatem accusantium',
+      'Doloremque laudantium totam', 'Rem aperiam eaque ipsa', 'Quae ab illo inventore',
+      'Veritatis et quasi architecto', 'Beatae vitae dicta sunt', 'Explicabo nemo enim',
+      'Ipsam voluptatem quia', 'Voluptas sit aspernatur', 'Aut odit aut fugit',
+      'Sed quia consequuntur', 'Magni dolores eos qui', 'Ratione voluptatem sequi',
+      'Nesciunt neque porro', 'Quisquam est qui dolorem', 'Ipsum quia dolor sit',
+      'Amet consectetur adipisci', 'Velit sed quia non', 'Numquam eius modi tempora',
+      'Incidunt ut labore et', 'Dolore magnam aliquam', 'Quaerat voluptatem ut enim'
+    ];
+
+    const loremDescriptions = [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
+      'Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
+      'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos.',
+      'Qui ratione voluptatem sequi nesciunt neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.',
+      'Consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.'
+    ];
+
+    const tags: ('Productdesign'|'DataViz'|'AI'|'Music'|'Writing')[] = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'];
+    const timePeriods: ('Early' | 'Mid' | 'Recent' | 'Current' | 'Future')[] = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
+
+    const newProjects: Project[] = [];
+    
+    for (let i = 0; i < 2000; i++) {
+      const randomTitle = loremTitles[Math.floor(Math.random() * loremTitles.length)];
+      const randomSummary = loremSummaries[Math.floor(Math.random() * loremSummaries.length)];
+      const randomDescription = loremDescriptions[Math.floor(Math.random() * loremDescriptions.length)];
+      const randomTag = tags[Math.floor(Math.random() * tags.length)];
+      const randomTimePeriod = timePeriods[Math.floor(Math.random() * timePeriods.length)];
+      
+      newProjects.push({
+        id: `lorem-project-${i}`,
+        title: `${randomTitle} ${i + 1}`,
+        summary: randomSummary,
+        description: randomDescription,
+        content: `${randomDescription} This is additional content for project ${i + 1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
+        image: `/images/contracts-roles.svg`, // Use existing image as placeholder
+        tags: [randomTag],
+        timePeriod: randomTimePeriod,
+        featured: false // None of the generated projects are featured
+      });
+    }
+    
+    setAdditionalProjects(newProjects);
+  };
+
+  return {
+    projects,
+    query,
+    setQuery,
+    tag,
     setTag, 
     timePeriod, 
     setTimePeriod, 
@@ -146,6 +228,8 @@ export function useProjects() {
     featuredProjects,
     focusedProject,
     focusProject,
-    clearFocus
+    clearFocus,
+    generateAdditionalProjects,
+    hasAdditionalProjects: additionalProjects.length > 0
   } as const;
 }

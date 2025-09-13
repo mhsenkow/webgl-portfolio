@@ -107,9 +107,9 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           const row = Math.floor(index / cols);
           const col = index % cols;
           
-          // Fill viewport with even spacing
-          const availableWidth = visibleWidth * 0.9;
-          const availableHeight = visibleHeight * 0.9;
+          // Fill viewport with even spacing and more padding
+          const availableWidth = visibleWidth * 0.75; // Use 75% of viewport width (more padding)
+          const availableHeight = visibleHeight * 0.75; // Use 75% of viewport height (more padding)
           
           const horizontalSpacing = cols > 1 ? availableWidth / (cols - 1) : 0;
           const verticalSpacing = rows > 1 ? availableHeight / (rows - 1) : 0;
@@ -171,28 +171,26 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           break;
           
         case 'spiral':
-          // Timeline spiral - shows project progression over time
-          const spiralTimePeriods = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
-          const spiralTimeIndex = spiralTimePeriods.indexOf(project.timePeriod);
-          
-          // Spiral radius based on time period (older = smaller radius)
-          const spiralRadius = 1 + spiralTimeIndex * 0.8;
-          
-          // Spiral angle based on project index within time period
-          const projectsInTimePeriod = projects.filter(p => p.timePeriod === project.timePeriod);
-          const indexInTimePeriod = projectsInTimePeriod.indexOf(project);
-          const spiralAngle = (indexInTimePeriod / projectsInTimePeriod.length) * Math.PI * 2;
+          // Fun spiral formation - cards arranged in a simple spiral
+          const spiralRadius = 0.5 + index * 0.4; // Growing radius
+          const spiralAngle = index * 0.6; // Spiral angle
+          const spiralHeight = index * 0.15; // Rising height
           
           x = spiralRadius * Math.cos(spiralAngle);
-          y = spiralRadius * Math.sin(spiralAngle);
+          y = spiralHeight - 2; // Center vertically
+          z = spiralRadius * Math.sin(spiralAngle);
           
-          // Z-axis: Featured projects float higher
-          z = project.featured ? 2 + Math.random() * 0.5 : 0.5 + Math.random() * 0.5;
+          // Featured cards get higher positions
+          if (project.featured) {
+            y += 2;
+            x *= 1.3;
+            z *= 1.3;
+          }
           
-          // Add subtle variation
+          // Add some variation for natural feel
           x += (Math.random() - 0.5) * 0.3;
-          y += (Math.random() - 0.5) * 0.3;
-          z += (Math.random() - 0.5) * 0.2;
+          y += (Math.random() - 0.5) * 0.2;
+          z += (Math.random() - 0.5) * 0.3;
           break;
           
         case 'grid':
@@ -218,29 +216,28 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           break;
           
         case 'cube':
-          // 3D project relationship cube - shows project complexity and connections
-          const cubeComplexityLevels = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
-          const cubeComplexityIndex = cubeComplexityLevels.indexOf(project.timePeriod);
+          // 3D cube formation - cards arranged in a proper cube
+          const cubeSize = Math.ceil(Math.cbrt(projects.length));
+          const cubeX = index % cubeSize;
+          const cubeY = Math.floor(index / cubeSize) % cubeSize;
+          const cubeZ = Math.floor(index / (cubeSize * cubeSize));
           
-          // X-axis: Project complexity/sophistication
-          x = (cubeComplexityIndex - 2) * 2.5;
+          // Position cards in a cube formation
+          x = (cubeX - cubeSize / 2) * 2.2;
+          y = (cubeY - cubeSize / 2) * 2.2;
+          z = (cubeZ - cubeSize / 2) * 2.2;
           
-          // Y-axis: Category/skill type
-          const cubeCategories = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'];
-          const cubeCategoryIndex = cubeCategories.indexOf(project.tags[0] as 'Productdesign' | 'DataViz' | 'AI' | 'Music' | 'Writing');
-          y = (cubeCategoryIndex - 2) * 2.5;
-          
-          // Z-axis: Featured projects at front, others distributed
+          // Featured cards get center positions
           if (project.featured) {
-            z = -2; // Featured projects at front
-          } else {
-            z = Math.random() * 3 - 1; // Others distributed in back
+            x *= 0.6;
+            y *= 0.6;
+            z *= 0.6;
           }
           
-          // Add variation for natural feel
-          x += (Math.random() - 0.5) * 0.6;
-          y += (Math.random() - 0.5) * 0.6;
-          z += (Math.random() - 0.5) * 0.4;
+          // Add some variation for natural feel
+          x += (Math.random() - 0.5) * 0.3;
+          y += (Math.random() - 0.5) * 0.3;
+          z += (Math.random() - 0.5) * 0.3;
           break;
           
         default:

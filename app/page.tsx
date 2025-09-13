@@ -20,6 +20,8 @@ import ThemeProvider from '@/components/ThemeProvider';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/components/ThemeProvider';
 import { getThemeColors } from '@/components/theme';
+import LandscapeBackground from '@/components/LandscapeBackground';
+import StarfieldBackground from '@/components/StarfieldBackground';
 
 // Component that can access camera transition state
 function ControlledOrbitControls() {
@@ -32,6 +34,8 @@ function ControlledOrbitControls() {
       dampingFactor={0.05} 
       enablePan={true} 
       enableZoom={true}
+      minDistance={3}
+      maxDistance={25}
       enabled={!isTransitioning}
       makeDefault={false}
       target={cardPosition ? [cardPosition.x, cardPosition.y, cardPosition.z] : [0, 0, 0]}
@@ -40,7 +44,7 @@ function ControlledOrbitControls() {
 }
 
 function PortfolioContent() {
-  const { projects, timePeriod, selectedProject, setSelectedProject, cardPosition, setCardPosition, query, tag, layout } = useProjectsContext();
+  const { timePeriod, selectedProject, setSelectedProject, cardPosition, setCardPosition, query, tag, layout } = useProjectsContext();
   const { theme } = useTheme();
   const themeColors = getThemeColors(theme);
 
@@ -57,11 +61,11 @@ function PortfolioContent() {
   return (
     <main className="h-dvh w-full">
       <Canvas 
-        camera={{ position: [0, 0, 12], fov: 60 }}
+        camera={{ position: [0, 0, 12], fov: 60, near: 0.1, far: 1000 }}
         shadows
         gl={{ 
           antialias: true, 
-          alpha: false, 
+          alpha: true, 
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2
@@ -69,6 +73,12 @@ function PortfolioContent() {
       >
         <CameraTransitionProvider>
           <color attach="background" args={[themeColors.background]} />
+          
+          {/* Subtle landscape background for light mode */}
+          <LandscapeBackground theme={theme} />
+          
+          {/* Starfield background for dark mode */}
+          <StarfieldBackground theme={theme} />
           
           {/* Soft lighting setup for light background */}
           <ambientLight intensity={0.6} />
@@ -92,7 +102,7 @@ function PortfolioContent() {
           
           <Particles count={8000} />
           <Comets />
-          <CardCloud projects={projects} onCardClick={handleCardClick} onCardCenter={handleCardCenter} timePeriod={timePeriod} isDetailOpen={!!selectedProject} query={query} tag={tag} layout={layout} />
+          <CardCloud onCardClick={handleCardClick} onCardCenter={handleCardCenter} timePeriod={timePeriod} isDetailOpen={!!selectedProject} query={query} tag={tag} layout={layout} />
           <ControlledOrbitControls />
           <KeyboardControls />
           <SpacePanControls />

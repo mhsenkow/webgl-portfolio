@@ -17,12 +17,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { Project } from '@/data/projects';
+import { projects, Project } from '@/data/projects';
 import ProjectCard from './ProjectCard';
 import { useWindowSize } from '@/hooks/useWindowSize';
 
 interface CardCloudProps {
-  projects: Project[];
   onCardClick: (project: Project, position: { x: number; y: number; z: number }) => void;
   onCardCenter?: (position: { x: number; y: number; z: number }) => void;
   timePeriod?: string | null;
@@ -32,7 +31,7 @@ interface CardCloudProps {
   layout?: 'flat-grid' | 'staggered' | 'sphere' | 'spiral' | 'grid' | 'cube';
 }
 
-export default function CardCloud({ projects, onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid' }: CardCloudProps) {
+export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid' }: CardCloudProps) {
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [targetPositions, setTargetPositions] = useState<THREE.Vector3[]>([]);
   const [currentPositions, setCurrentPositions] = useState<THREE.Vector3[]>([]);
@@ -52,18 +51,18 @@ export default function CardCloud({ projects, onCardClick, onCardCenter, timePer
     // Time period focus gets highest priority
     if (timePeriod && matchesTimePeriod) {
       if (matchesQuery && matchesTag) return 1.0;
-      if (matchesQuery || matchesTag) return 0.8;
-      return 0.6; // Still visible even without query/tag match
+      if (matchesQuery || matchesTag) return 0.9;
+      return 0.8; // Still visible even without query/tag match
     }
     
     // If both query and tag match, full visibility
     if (matchesQuery && matchesTag) return 1.0;
     
-    // If only one matches, reduced visibility
-    if (matchesQuery || matchesTag) return 0.3;
+    // If only one matches, good visibility
+    if (matchesQuery || matchesTag) return 0.8;
     
-    // If neither matches, very low visibility
-    return 0.1;
+    // If neither matches, still visible but slightly dimmed
+    return 0.7;
   };
 
   const positions = useMemo(() => {

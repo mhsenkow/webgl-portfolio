@@ -71,7 +71,6 @@ export default function ProjectCard({ project, position, onClick, onCenter, opac
     loader.load(
       imagePath,
       (texture) => {
-        console.log('Successfully loaded texture for:', project.title);
         texture.wrapS = THREE.ClampToEdgeWrapping;
         texture.wrapT = THREE.ClampToEdgeWrapping;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -79,11 +78,13 @@ export default function ProjectCard({ project, position, onClick, onCenter, opac
         texture.generateMipmaps = true;
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.needsUpdate = true;
+        console.log('Successfully loaded texture for project:', project.title);
         setImageTexture(texture);
       },
       undefined, // onProgress
       (error) => {
         console.warn('Failed to load texture for project:', project.title, 'Error:', error);
+        console.log('Attempted to load image:', project.image);
         // Fallback to colored background
         setImageTexture(null);
       }
@@ -286,7 +287,7 @@ export default function ProjectCard({ project, position, onClick, onCenter, opac
   };
 
   return (
-    <group ref={meshRef} position={position} scale={[cardScale, cardScale, cardScale]}>
+    <group ref={meshRef} position={position} scale={[cardScale, cardScale, cardScale]} renderOrder={1000}>
       {/* Main rounded card background - matching current portfolio style */}
       <mesh
         ref={cardRef}

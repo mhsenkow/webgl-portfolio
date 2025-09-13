@@ -6,6 +6,7 @@
  * - Arrow keys for rotating around center
  * - Smooth, frame-rate independent movement
  * - Automatically disabled during camera transitions
+ * - Automatically disabled when user is focused on input fields
  * - Non-conflicting with OrbitControls
  * 
  * Controls:
@@ -19,6 +20,8 @@
  * - ↓: Rotate down
  * - ←: Rotate left
  * - →: Rotate right
+ * 
+ * Note: All controls are disabled when user is typing in search input or other form fields
  */
 'use client';
 import { useRef, useEffect } from 'react';
@@ -54,6 +57,17 @@ export default function KeyboardControls() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if user is focused on an input field
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        (activeElement as HTMLElement).contentEditable === 'true'
+      );
+      
+      // Don't process keys if user is typing in an input
+      if (isInputFocused) return;
+      
       const key = event.key.toLowerCase();
       keysRef.current[key] = true;
       
@@ -72,6 +86,17 @@ export default function KeyboardControls() {
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
+      // Check if user is focused on an input field
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        (activeElement as HTMLElement).contentEditable === 'true'
+      );
+      
+      // Don't process keys if user is typing in an input
+      if (isInputFocused) return;
+      
       keysRef.current[event.key.toLowerCase()] = false;
     };
 
@@ -87,6 +112,17 @@ export default function KeyboardControls() {
   useFrame((state, delta) => {
     // Don't move camera if we're transitioning between time periods
     if (isTransitioning) return;
+    
+    // Check if user is focused on an input field
+    const activeElement = document.activeElement;
+    const isInputFocused = activeElement && (
+      activeElement.tagName === 'INPUT' ||
+      activeElement.tagName === 'TEXTAREA' ||
+      (activeElement as HTMLElement).contentEditable === 'true'
+    );
+    
+    // Don't process movement if user is typing in an input
+    if (isInputFocused) return;
     
     const keys = keysRef.current;
     const moveSpeed = 0.1;

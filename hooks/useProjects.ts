@@ -41,31 +41,47 @@ export function useProjects() {
     // Use the same positioning logic as CardCloud
     switch (layout) {
       case 'flat-grid':
-        // Responsive 2D Grid layout positioning (same logic as CardCloud)
+        // Viewport-responsive 2D Grid layout positioning (same logic as CardCloud)
         const totalCards = seed.length;
         
-        // Responsive grid calculation based on aspect ratio
-        const aspectRatio = 16 / 9;
-        let cols = Math.ceil(Math.sqrt(totalCards * aspectRatio));
+        // Get viewport dimensions (assuming standard camera setup)
+        const cameraDistance = 12;
+        const fov = 60;
+        const fovRad = (fov * Math.PI) / 180;
+        const visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
+        const visibleWidth = visibleHeight * (16 / 9); // Assuming 16:9 aspect ratio
+        
+        // Card dimensions (1.8 x 1.2)
+        const cardWidth = 1.8;
+        const cardHeight = 1.2;
+        
+        // Calculate optimal grid based on viewport
+        const maxCols = Math.floor(visibleWidth / (cardWidth * 1.2)); // 20% margin between cards
+        const maxRows = Math.floor(visibleHeight / (cardHeight * 1.2));
+        
+        // Calculate actual grid dimensions
+        let cols = Math.min(maxCols, Math.ceil(Math.sqrt(totalCards)));
         let rows = Math.ceil(totalCards / cols);
         
-        // Adjust for better fit if needed
-        if (cols * rows - totalCards >= cols) {
-          rows = Math.max(1, rows - 1);
+        // Ensure we don't exceed viewport limits
+        if (rows > maxRows) {
+          rows = maxRows;
+          cols = Math.ceil(totalCards / rows);
         }
         
-        // Ensure we don't have too many columns (max 6 for readability)
-        cols = Math.min(cols, 6);
-        rows = Math.ceil(totalCards / cols);
+        // Ensure minimum of 1 column
+        cols = Math.max(1, cols);
+        rows = Math.max(1, rows);
         
         const row = Math.floor(projectIndex / cols);
         const col = projectIndex % cols;
         
-        // Responsive spacing based on grid size
-        const baseSpacing = 2.2;
-        const spacingMultiplier = Math.max(0.7, 1 - (cols - 3) * 0.1);
-        const horizontalSpacing = baseSpacing * spacingMultiplier;
-        const verticalSpacing = horizontalSpacing * 0.8;
+        // Calculate spacing to fill viewport nicely
+        const availableWidth = visibleWidth * 0.8; // Use 80% of viewport width
+        const availableHeight = visibleHeight * 0.8; // Use 80% of viewport height
+        
+        const horizontalSpacing = cols > 1 ? availableWidth / (cols - 1) : 0;
+        const verticalSpacing = rows > 1 ? availableHeight / (rows - 1) : 0;
         
         // Center the grid
         const centerOffsetX = (cols - 1) / 2;

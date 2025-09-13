@@ -12,6 +12,7 @@ export function useProjects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number; z: number } | null>(null);
   const [focusedProject, setFocusedProject] = useState<Project | null>(null);
+  const [customViewport, setCustomViewport] = useState<{ width: number; height: number } | null>(null);
 
   const projects = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -61,8 +62,8 @@ export function useProjects() {
         const cardHeight = 1.2;
         
         // Calculate optimal grid based on browser window
-        const maxCols = Math.floor(visibleWidth / (cardWidth * 1.3)); // 30% margin between cards
-        const maxRows = Math.floor(visibleHeight / (cardHeight * 1.3));
+        const maxCols = Math.floor(visibleWidth / (cardWidth * 1.1)); // 10% margin between cards (tighter)
+        const maxRows = Math.floor(visibleHeight / (cardHeight * 1.1));
         
         // Calculate actual grid dimensions
         let cols = Math.min(maxCols, Math.ceil(Math.sqrt(totalCards)));
@@ -82,8 +83,8 @@ export function useProjects() {
         const col = projectIndex % cols;
         
         // Calculate spacing to fill browser viewport nicely
-        const availableWidth = visibleWidth * 0.85; // Use 85% of viewport width
-        const availableHeight = visibleHeight * 0.85; // Use 85% of viewport height
+        const availableWidth = visibleWidth * 0.95; // Use 95% of viewport width (tighter)
+        const availableHeight = visibleHeight * 0.95; // Use 95% of viewport height (tighter)
         
         const horizontalSpacing = cols > 1 ? availableWidth / (cols - 1) : 0;
         const verticalSpacing = rows > 1 ? availableHeight / (rows - 1) : 0;
@@ -128,6 +129,18 @@ export function useProjects() {
     setCardPosition(null);
   };
 
+  // Function to resize grid based on current camera view
+  const resizeGridToCurrentView = (viewportWidth: number, viewportHeight: number) => {
+    setCustomViewport({ width: viewportWidth, height: viewportHeight });
+    setLayout('flat-grid'); // Ensure we're in flat-grid mode
+  };
+
+  // Function to reset to browser window responsive mode
+  const resetToBrowserResponsive = () => {
+    setCustomViewport(null);
+    setLayout('flat-grid');
+  };
+
   return { 
     projects, 
     query, 
@@ -146,6 +159,9 @@ export function useProjects() {
     featuredProjects,
     focusedProject,
     focusProject,
-    clearFocus
+    clearFocus,
+    customViewport,
+    resizeGridToCurrentView,
+    resetToBrowserResponsive
   } as const;
 }

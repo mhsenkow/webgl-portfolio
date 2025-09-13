@@ -14,7 +14,7 @@ const LAYOUTS = [
 ] as const;
 
 export default function Hud() {
-  const { query, setQuery, tag, setTag, layout, setLayout, featuredProjects, focusedProject, focusProject, clearFocus } = useProjectsContext();
+  const { query, setQuery, tag, setTag, layout, setLayout, featuredProjects, focusedProject, focusProject, clearFocus, customViewport, resizeGridToCurrentView, resetToBrowserResponsive } = useProjectsContext();
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -71,6 +71,42 @@ export default function Hud() {
               }`}>{layoutOption.icon}</span>
             </button>
           ))}
+          
+          {/* Resize to current view button */}
+          <button
+            onClick={() => {
+              if (customViewport) {
+                // If already using custom viewport, reset to browser responsive
+                resetToBrowserResponsive();
+              } else {
+                // Get current camera viewport and resize grid to it
+                // This is a simplified approach - in a real implementation you'd get the actual camera state
+                const aspectRatio = window.innerWidth / window.innerHeight;
+                const cameraDistance = 12;
+                const fov = 60;
+                const fovRad = (fov * Math.PI) / 180;
+                const visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
+                const visibleWidth = visibleHeight * aspectRatio;
+                resizeGridToCurrentView(visibleWidth, visibleHeight);
+              }
+            }}
+            className={`grid h-10 w-10 place-items-center rounded-full border transition-all duration-300 ease-out transform hover:scale-110 ${
+              customViewport 
+                ? theme === 'dark'
+                  ? 'border-green-400 bg-green-500/20 scale-110 shadow-lg shadow-green-400/30'
+                  : theme === 'high-contrast'
+                  ? 'border-green-600 bg-green-600 text-white scale-110 shadow-lg shadow-green-600/30'
+                  : 'border-green-500 bg-green-50 scale-110 shadow-lg shadow-green-200'
+                : theme === 'dark'
+                  ? 'border-gray-600 bg-gray-800/80 hover:bg-gray-700 hover:border-gray-500'
+                  : theme === 'high-contrast'
+                  ? 'border-gray-400 bg-white/80 hover:bg-gray-100 hover:border-gray-600'
+                  : 'border-gray-300 bg-white/80 hover:bg-gray-50 hover:border-gray-400'
+            }`}
+            title={customViewport ? "Reset to browser responsive" : "Resize grid to current view"}
+          >
+            <span className="text-lg">{customViewport ? '🔄' : '📐'}</span>
+          </button>
         </div>
       </div>
 

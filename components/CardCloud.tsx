@@ -29,9 +29,10 @@ interface CardCloudProps {
   query?: string;
   tag?: string | null;
   layout?: 'flat-grid' | 'staggered' | 'sphere' | 'spiral' | 'grid' | 'cube';
+  customViewport?: { width: number; height: number } | null;
 }
 
-export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid' }: CardCloudProps) {
+export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid', customViewport = null }: CardCloudProps) {
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [targetPositions, setTargetPositions] = useState<THREE.Vector3[]>([]);
   const [currentPositions, setCurrentPositions] = useState<THREE.Vector3[]>([]);
@@ -77,25 +78,33 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           // Browser window responsive 2D Grid layout
           const totalCards = projects.length;
           
-          // Calculate viewport dimensions based on browser window size
-          // Convert browser pixels to 3D world units
-          const aspectRatio = windowWidth / windowHeight;
+          let visibleWidth, visibleHeight;
           
-          // Base the 3D viewport on the browser window aspect ratio
-          // Camera is at z=12, fov=60, so we can calculate visible area
-          const cameraDistance = 12;
-          const fov = 60;
-          const fovRad = (fov * Math.PI) / 180;
-          const visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
-          const visibleWidth = visibleHeight * aspectRatio;
+          if (customViewport) {
+            // Use custom viewport dimensions (from current camera view)
+            visibleWidth = customViewport.width;
+            visibleHeight = customViewport.height;
+          } else {
+            // Calculate viewport dimensions based on browser window size
+            // Convert browser pixels to 3D world units
+            const aspectRatio = windowWidth / windowHeight;
+            
+            // Base the 3D viewport on the browser window aspect ratio
+            // Camera is at z=12, fov=60, so we can calculate visible area
+            const cameraDistance = 12;
+            const fov = 60;
+            const fovRad = (fov * Math.PI) / 180;
+            visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
+            visibleWidth = visibleHeight * aspectRatio;
+          }
           
           // Card dimensions (1.8 x 1.2)
           const cardWidth = 1.8;
           const cardHeight = 1.2;
           
           // Calculate optimal grid based on browser window
-          const maxCols = Math.floor(visibleWidth / (cardWidth * 1.3)); // 30% margin between cards
-          const maxRows = Math.floor(visibleHeight / (cardHeight * 1.3));
+          const maxCols = Math.floor(visibleWidth / (cardWidth * 1.1)); // 10% margin between cards (tighter)
+          const maxRows = Math.floor(visibleHeight / (cardHeight * 1.1));
           
           // Calculate actual grid dimensions
           let cols = Math.min(maxCols, Math.ceil(Math.sqrt(totalCards)));
@@ -115,8 +124,8 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
           const col = index % cols;
           
           // Calculate spacing to fill browser viewport nicely
-          const availableWidth = visibleWidth * 0.85; // Use 85% of viewport width
-          const availableHeight = visibleHeight * 0.85; // Use 85% of viewport height
+          const availableWidth = visibleWidth * 0.95; // Use 95% of viewport width (tighter)
+          const availableHeight = visibleHeight * 0.95; // Use 95% of viewport height (tighter)
           
           const horizontalSpacing = cols > 1 ? availableWidth / (cols - 1) : 0;
           const verticalSpacing = rows > 1 ? availableHeight / (rows - 1) : 0;
@@ -241,7 +250,7 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
       
       return new THREE.Vector3(x, y, z);
     });
-  }, [timePeriod, layout, windowWidth, windowHeight]);
+  }, [timePeriod, layout, windowWidth, windowHeight, customViewport]);
 
   // Update target positions when timePeriod changes
   useEffect(() => {

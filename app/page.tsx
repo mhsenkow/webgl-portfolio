@@ -40,7 +40,7 @@ function ControlledOrbitControls() {
 }
 
 function PortfolioContent() {
-  const { timePeriod, selectedProject, setSelectedProject, cardPosition, setCardPosition, query, tag, layout } = useProjectsContext();
+  const { timePeriod, selectedProject, setSelectedProject, cardPosition, setCardPosition, query, tag, layout, customViewport } = useProjectsContext();
   const { theme } = useTheme();
   const themeColors = getThemeColors(theme);
 
@@ -92,7 +92,7 @@ function PortfolioContent() {
           
           <Particles count={8000} />
           <Comets />
-          <CardCloud onCardClick={handleCardClick} onCardCenter={handleCardCenter} timePeriod={timePeriod} isDetailOpen={!!selectedProject} query={query} tag={tag} layout={layout} />
+          <CardCloud onCardClick={handleCardClick} onCardCenter={handleCardCenter} timePeriod={timePeriod} isDetailOpen={!!selectedProject} query={query} tag={tag} layout={layout} customViewport={customViewport} />
           <ControlledOrbitControls />
           <KeyboardControls />
           <SpacePanControls />

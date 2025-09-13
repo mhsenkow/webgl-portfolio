@@ -1,8 +1,10 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { projects as seed, Project } from '@/data/projects';
+import { useWindowSize } from './useWindowSize';
 
 export function useProjects() {
+  const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [query, setQuery] = useState('');
   const [tag, setTag] = useState<string | null>(null);
   const [timePeriod, setTimePeriod] = useState<string | null>(null);
@@ -41,23 +43,26 @@ export function useProjects() {
     // Use the same positioning logic as CardCloud
     switch (layout) {
       case 'flat-grid':
-        // Viewport-responsive 2D Grid layout positioning (same logic as CardCloud)
+        // Browser window responsive 2D Grid layout positioning (same logic as CardCloud)
         const totalCards = seed.length;
         
-        // Get viewport dimensions (assuming standard camera setup)
+        // Calculate viewport dimensions based on browser window size
+        const aspectRatio = windowWidth / windowHeight;
+        
+        // Base the 3D viewport on the browser window aspect ratio
         const cameraDistance = 12;
         const fov = 60;
         const fovRad = (fov * Math.PI) / 180;
         const visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
-        const visibleWidth = visibleHeight * (16 / 9); // Assuming 16:9 aspect ratio
+        const visibleWidth = visibleHeight * aspectRatio;
         
         // Card dimensions (1.8 x 1.2)
         const cardWidth = 1.8;
         const cardHeight = 1.2;
         
-        // Calculate optimal grid based on viewport
-        const maxCols = Math.floor(visibleWidth / (cardWidth * 1.2)); // 20% margin between cards
-        const maxRows = Math.floor(visibleHeight / (cardHeight * 1.2));
+        // Calculate optimal grid based on browser window
+        const maxCols = Math.floor(visibleWidth / (cardWidth * 1.3)); // 30% margin between cards
+        const maxRows = Math.floor(visibleHeight / (cardHeight * 1.3));
         
         // Calculate actual grid dimensions
         let cols = Math.min(maxCols, Math.ceil(Math.sqrt(totalCards)));
@@ -76,9 +81,9 @@ export function useProjects() {
         const row = Math.floor(projectIndex / cols);
         const col = projectIndex % cols;
         
-        // Calculate spacing to fill viewport nicely
-        const availableWidth = visibleWidth * 0.8; // Use 80% of viewport width
-        const availableHeight = visibleHeight * 0.8; // Use 80% of viewport height
+        // Calculate spacing to fill browser viewport nicely
+        const availableWidth = visibleWidth * 0.85; // Use 85% of viewport width
+        const availableHeight = visibleHeight * 0.85; // Use 85% of viewport height
         
         const horizontalSpacing = cols > 1 ? availableWidth / (cols - 1) : 0;
         const verticalSpacing = rows > 1 ? availableHeight / (rows - 1) : 0;

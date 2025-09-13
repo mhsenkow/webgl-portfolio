@@ -12,7 +12,6 @@ export function useProjects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [cardPosition, setCardPosition] = useState<{ x: number; y: number; z: number } | null>(null);
   const [focusedProject, setFocusedProject] = useState<Project | null>(null);
-  const [customViewport, setCustomViewport] = useState<{ width: number; height: number } | null>(null);
 
   const projects = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -129,18 +128,6 @@ export function useProjects() {
     setCardPosition(null);
   };
 
-  // Function to resize grid based on current camera view
-  const resizeGridToCurrentView = (viewportWidth: number, viewportHeight: number) => {
-    setCustomViewport({ width: viewportWidth, height: viewportHeight });
-    setLayout('flat-grid'); // Ensure we're in flat-grid mode
-  };
-
-  // Function to reset to browser window responsive mode
-  const resetToBrowserResponsive = () => {
-    setCustomViewport(null);
-    setLayout('flat-grid');
-  };
-
   return { 
     projects, 
     query, 
@@ -159,9 +146,6 @@ export function useProjects() {
     featuredProjects,
     focusedProject,
     focusProject,
-    clearFocus,
-    customViewport,
-    resizeGridToCurrentView,
-    resetToBrowserResponsive
+    clearFocus
   } as const;
 }

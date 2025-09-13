@@ -29,10 +29,9 @@ interface CardCloudProps {
   query?: string;
   tag?: string | null;
   layout?: 'flat-grid' | 'staggered' | 'sphere' | 'spiral' | 'grid' | 'cube';
-  customViewport?: { width: number; height: number } | null;
 }
 
-export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid', customViewport = null }: CardCloudProps) {
+export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDetailOpen = false, query = '', tag = null, layout = 'flat-grid' }: CardCloudProps) {
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const [targetPositions, setTargetPositions] = useState<THREE.Vector3[]>([]);
   const [currentPositions, setCurrentPositions] = useState<THREE.Vector3[]>([]);
@@ -75,173 +74,173 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
       
       switch (layout) {
         case 'flat-grid':
-          // Browser window responsive 2D Grid layout
+          // Simple responsive viewport fit - always fits browser window perfectly
           const totalCards = projects.length;
           
-          let visibleWidth, visibleHeight;
+          // Always use browser window dimensions for responsive fit
+          const aspectRatio = windowWidth / windowHeight;
+          const cameraDistance = 12;
+          const fov = 60;
+          const fovRad = (fov * Math.PI) / 180;
+          const visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
+          const visibleWidth = visibleHeight * aspectRatio;
           
-          if (customViewport) {
-            // Use custom viewport dimensions (from current camera view)
-            visibleWidth = customViewport.width;
-            visibleHeight = customViewport.height;
-          } else {
-            // Calculate viewport dimensions based on browser window size
-            // Convert browser pixels to 3D world units
-            const aspectRatio = windowWidth / windowHeight;
-            
-            // Base the 3D viewport on the browser window aspect ratio
-            // Camera is at z=12, fov=60, so we can calculate visible area
-            const cameraDistance = 12;
-            const fov = 60;
-            const fovRad = (fov * Math.PI) / 180;
-            visibleHeight = 2 * cameraDistance * Math.tan(fovRad / 2);
-            visibleWidth = visibleHeight * aspectRatio;
-          }
-          
-          // Card dimensions (1.8 x 1.2)
+          // Card dimensions
           const cardWidth = 1.8;
           const cardHeight = 1.2;
           
-          // Calculate optimal grid based on browser window
-          const maxCols = Math.floor(visibleWidth / (cardWidth * 1.1)); // 10% margin between cards (tighter)
-          const maxRows = Math.floor(visibleHeight / (cardHeight * 1.1));
+          // Calculate optimal grid to fill viewport
+          const maxCols = Math.floor(visibleWidth / (cardWidth * 1.2));
+          const maxRows = Math.floor(visibleHeight / (cardHeight * 1.2));
           
-          // Calculate actual grid dimensions
           let cols = Math.min(maxCols, Math.ceil(Math.sqrt(totalCards)));
           let rows = Math.ceil(totalCards / cols);
           
-          // Ensure we don't exceed viewport limits
           if (rows > maxRows) {
             rows = maxRows;
             cols = Math.ceil(totalCards / rows);
           }
           
-          // Ensure minimum of 1 column
           cols = Math.max(1, cols);
           rows = Math.max(1, rows);
           
           const row = Math.floor(index / cols);
           const col = index % cols;
           
-          // Calculate spacing to fill browser viewport nicely
-          const availableWidth = visibleWidth * 0.95; // Use 95% of viewport width (tighter)
-          const availableHeight = visibleHeight * 0.95; // Use 95% of viewport height (tighter)
+          // Fill viewport with even spacing
+          const availableWidth = visibleWidth * 0.9;
+          const availableHeight = visibleHeight * 0.9;
           
           const horizontalSpacing = cols > 1 ? availableWidth / (cols - 1) : 0;
           const verticalSpacing = rows > 1 ? availableHeight / (rows - 1) : 0;
           
-          // Center the grid
           const centerOffsetX = (cols - 1) / 2;
           const centerOffsetY = (rows - 1) / 2;
           
           x = (col - centerOffsetX) * horizontalSpacing;
-          y = -(row - centerOffsetY) * verticalSpacing; // Inverted for proper layout
-          z = 0; // All cards at the same Z level for flat appearance
-          
-          // Add very subtle random variation to make it feel more natural
-          x += (Math.random() - 0.5) * 0.05;
-          y += (Math.random() - 0.5) * 0.05;
-          z += (Math.random() - 0.5) * 0.02;
+          y = -(row - centerOffsetY) * verticalSpacing;
+          z = 0;
           break;
           
         case 'staggered':
-          // Original staggered layout with time period focus
-          const timeIndex = timePeriodOrder.indexOf(project.timePeriod);
-          x = (timeIndex - 2) * 2.5;
+          // Time progression layout - shows chronological journey from left to right
+          const staggeredTimePeriods = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
+          const staggeredTimeIndex = staggeredTimePeriods.indexOf(project.timePeriod);
           
-          const tagIndex = tagOrder.indexOf(project.tags[0]);
-          y = (tagIndex - 2) * 1.5;
+          // X-axis: Time progression (Early = far left, Future = far right)
+          x = (staggeredTimeIndex - 2) * 3.5; // Center around 0, spread out more
           
-          if (timePeriod) {
-            const selectedTimeIndex = timePeriodOrder.indexOf(timePeriod);
-            const timeDistance = Math.abs(timeIndex - selectedTimeIndex);
-            
-            if (project.timePeriod === timePeriod) {
-              // Focused epoch cards are closer but not too close
-              z = Math.random() * 1.5 + 1.0; // Closer but not too dramatic
-              x += (Math.random() - 0.5) * 1.0; // Some variation but centered
-              y += (Math.random() - 0.5) * 1.0;
-            } else {
-              // Other cards are pushed back more subtly
-              z = 2.5 + timeDistance * 1.5 + Math.random() * 1.0;
-              x += (Math.random() - 0.5) * 0.8;
-              y += (Math.random() - 0.5) * 0.8;
-            }
-          } else {
-            z = project.featured ? Math.random() * 2 + 1 : Math.random() * 3 + 2;
-            x += (Math.random() - 0.5) * 0.8;
-            y += (Math.random() - 0.5) * 0.8;
-          }
+          // Y-axis: Category grouping within each time period
+          const staggeredCategoryOrder = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'];
+          const staggeredCategoryIndex = staggeredCategoryOrder.indexOf(project.tags[0] as 'Productdesign' | 'DataViz' | 'AI' | 'Music' | 'Writing');
+          y = (staggeredCategoryIndex - 2) * 1.8; // Group by category vertically
+          
+          // Z-axis: Featured projects float higher
+          z = project.featured ? 1.5 : 0.3;
+          
+          // Add subtle random variation for natural feel
+          x += (Math.random() - 0.5) * 0.3;
+          y += (Math.random() - 0.5) * 0.3;
+          z += (Math.random() - 0.5) * 0.2;
           break;
           
         case 'sphere':
-          // Arrange cards in a sphere formation
-          const radius = 4 + (project.featured ? 1 : 0);
-          const phi = Math.acos(1 - 2 * index / projects.length); // Golden spiral distribution
-          const theta = Math.PI * (1 + Math.sqrt(5)) * index; // Golden angle
+          // Category-based sphere - projects grouped by skill/category
+          const sphereCategories = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'];
+          const sphereCategoryIndex = sphereCategories.indexOf(project.tags[0] as 'Productdesign' | 'DataViz' | 'AI' | 'Music' | 'Writing');
           
-          x = radius * Math.sin(phi) * Math.cos(theta);
-          y = radius * Math.sin(phi) * Math.sin(theta);
-          z = radius * Math.cos(phi);
+          // Create 5 vertical "poles" for each category
+          const poleAngle = (sphereCategoryIndex / sphereCategories.length) * Math.PI * 2;
+          const radius = 4.5;
           
-          // Add some randomness for organic feel
-          x += (Math.random() - 0.5) * 0.5;
-          y += (Math.random() - 0.5) * 0.5;
+          // Position around the sphere based on category
+          x = radius * Math.cos(poleAngle);
+          y = radius * Math.sin(poleAngle);
+          
+          // Z-axis: Featured projects at top, others distributed vertically
+          if (project.featured) {
+            z = 3 + Math.random() * 1; // Featured projects at top
+          } else {
+            z = (Math.random() - 0.5) * 4; // Others distributed vertically
+          }
+          
+          // Add some variation within each category
+          x += (Math.random() - 0.5) * 0.8;
+          y += (Math.random() - 0.5) * 0.8;
           z += (Math.random() - 0.5) * 0.5;
           break;
           
         case 'spiral':
-          // Arrange cards in a spiral formation
-          const spiralRadius = 0.5 + index * 0.3;
-          const spiralAngle = index * 0.8;
-          const spiralHeight = index * 0.2;
+          // Timeline spiral - shows project progression over time
+          const spiralTimePeriods = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
+          const spiralTimeIndex = spiralTimePeriods.indexOf(project.timePeriod);
+          
+          // Spiral radius based on time period (older = smaller radius)
+          const spiralRadius = 1 + spiralTimeIndex * 0.8;
+          
+          // Spiral angle based on project index within time period
+          const projectsInTimePeriod = projects.filter(p => p.timePeriod === project.timePeriod);
+          const indexInTimePeriod = projectsInTimePeriod.indexOf(project);
+          const spiralAngle = (indexInTimePeriod / projectsInTimePeriod.length) * Math.PI * 2;
           
           x = spiralRadius * Math.cos(spiralAngle);
-          y = spiralHeight - 2;
-          z = spiralRadius * Math.sin(spiralAngle);
+          y = spiralRadius * Math.sin(spiralAngle);
           
-          // Featured cards get higher positions
-          if (project.featured) {
-            y += 2;
-            x *= 1.2;
-            z *= 1.2;
-          }
+          // Z-axis: Featured projects float higher
+          z = project.featured ? 2 + Math.random() * 0.5 : 0.5 + Math.random() * 0.5;
+          
+          // Add subtle variation
+          x += (Math.random() - 0.5) * 0.3;
+          y += (Math.random() - 0.5) * 0.3;
+          z += (Math.random() - 0.5) * 0.2;
           break;
           
         case 'grid':
-          // Arrange cards in a 3D grid
-          const gridSize = Math.ceil(Math.cbrt(projects.length));
-          const gridX = index % gridSize;
-          const gridY = Math.floor(index / gridSize) % gridSize;
-          const gridZ = Math.floor(index / (gridSize * gridSize));
+          // Skill matrix grid - shows projects organized by skill categories
+          const gridSkillCategories = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'];
+          const gridSkillIndex = gridSkillCategories.indexOf(project.tags[0] as 'Productdesign' | 'DataViz' | 'AI' | 'Music' | 'Writing');
           
-          x = (gridX - gridSize / 2) * 2.5;
-          y = (gridY - gridSize / 2) * 2;
-          z = (gridZ - gridSize / 2) * 2.5;
+          // X-axis: Skill category (columns)
+          x = (gridSkillIndex - 2) * 3;
           
-          // Featured cards get front positions
-          if (project.featured) {
-            z -= 1;
-          }
+          // Y-axis: Time period (rows)
+          const gridTimePeriods = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
+          const gridTimeIndex = gridTimePeriods.indexOf(project.timePeriod);
+          y = (gridTimeIndex - 2) * 2.5;
+          
+          // Z-axis: Featured projects in front
+          z = project.featured ? -1 : 1;
+          
+          // Add variation within each cell
+          x += (Math.random() - 0.5) * 0.8;
+          y += (Math.random() - 0.5) * 0.8;
+          z += (Math.random() - 0.5) * 0.5;
           break;
           
         case 'cube':
-          // Arrange cards in a cube formation
-          const cubeSize = Math.ceil(Math.cbrt(projects.length));
-          const cubeX = index % cubeSize;
-          const cubeY = Math.floor(index / cubeSize) % cubeSize;
-          const cubeZ = Math.floor(index / (cubeSize * cubeSize));
+          // 3D project relationship cube - shows project complexity and connections
+          const cubeComplexityLevels = ['Early', 'Mid', 'Recent', 'Current', 'Future'];
+          const cubeComplexityIndex = cubeComplexityLevels.indexOf(project.timePeriod);
           
-          x = (cubeX - cubeSize / 2) * 1.8;
-          y = (cubeY - cubeSize / 2) * 1.8;
-          z = (cubeZ - cubeSize / 2) * 1.8;
+          // X-axis: Project complexity/sophistication
+          x = (cubeComplexityIndex - 2) * 2.5;
           
-          // Featured cards get center positions
+          // Y-axis: Category/skill type
+          const cubeCategories = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'];
+          const cubeCategoryIndex = cubeCategories.indexOf(project.tags[0] as 'Productdesign' | 'DataViz' | 'AI' | 'Music' | 'Writing');
+          y = (cubeCategoryIndex - 2) * 2.5;
+          
+          // Z-axis: Featured projects at front, others distributed
           if (project.featured) {
-            x *= 0.7;
-            y *= 0.7;
-            z *= 0.7;
+            z = -2; // Featured projects at front
+          } else {
+            z = Math.random() * 3 - 1; // Others distributed in back
           }
+          
+          // Add variation for natural feel
+          x += (Math.random() - 0.5) * 0.6;
+          y += (Math.random() - 0.5) * 0.6;
+          z += (Math.random() - 0.5) * 0.4;
           break;
           
         default:
@@ -250,7 +249,7 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
       
       return new THREE.Vector3(x, y, z);
     });
-  }, [timePeriod, layout, windowWidth, windowHeight, customViewport]);
+  }, [timePeriod, layout, windowWidth, windowHeight]);
 
   // Update target positions when timePeriod changes
   useEffect(() => {

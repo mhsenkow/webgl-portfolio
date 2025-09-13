@@ -41,14 +41,38 @@ export function useProjects() {
     // Use the same positioning logic as CardCloud
     switch (layout) {
       case 'flat-grid':
-        // 2D Grid layout positioning
-        const cols = Math.ceil(Math.sqrt(seed.length));
+        // Responsive 2D Grid layout positioning (same logic as CardCloud)
+        const totalCards = seed.length;
+        
+        // Responsive grid calculation based on aspect ratio
+        const aspectRatio = 16 / 9;
+        let cols = Math.ceil(Math.sqrt(totalCards * aspectRatio));
+        let rows = Math.ceil(totalCards / cols);
+        
+        // Adjust for better fit if needed
+        if (cols * rows - totalCards >= cols) {
+          rows = Math.max(1, rows - 1);
+        }
+        
+        // Ensure we don't have too many columns (max 6 for readability)
+        cols = Math.min(cols, 6);
+        rows = Math.ceil(totalCards / cols);
+        
         const row = Math.floor(projectIndex / cols);
         const col = projectIndex % cols;
         
-        const centerOffset = (cols - 1) / 2;
-        x = (col - centerOffset) * 2.2;
-        y = -(row - centerOffset) * 1.8;
+        // Responsive spacing based on grid size
+        const baseSpacing = 2.2;
+        const spacingMultiplier = Math.max(0.7, 1 - (cols - 3) * 0.1);
+        const horizontalSpacing = baseSpacing * spacingMultiplier;
+        const verticalSpacing = horizontalSpacing * 0.8;
+        
+        // Center the grid
+        const centerOffsetX = (cols - 1) / 2;
+        const centerOffsetY = (rows - 1) / 2;
+        
+        x = (col - centerOffsetX) * horizontalSpacing;
+        y = -(row - centerOffsetY) * verticalSpacing;
         z = 0;
         break;
         

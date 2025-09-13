@@ -72,21 +72,46 @@ export default function CardCloud({ onCardClick, onCardCenter, timePeriod, isDet
       
       switch (layout) {
         case 'flat-grid':
-          // 2D Grid layout - looks like a flat plane initially
-          const cols = Math.ceil(Math.sqrt(projects.length));
+          // Responsive 2D Grid layout - adapts to viewport
+          // Calculate responsive grid dimensions
+          const totalCards = projects.length;
+          
+          // Responsive grid calculation based on aspect ratio
+          // Aim for roughly 16:9 aspect ratio with some flexibility
+          const aspectRatio = 16 / 9;
+          let cols = Math.ceil(Math.sqrt(totalCards * aspectRatio));
+          let rows = Math.ceil(totalCards / cols);
+          
+          // Adjust for better fit if needed
+          if (cols * rows - totalCards >= cols) {
+            rows = Math.max(1, rows - 1);
+          }
+          
+          // Ensure we don't have too many columns (max 6 for readability)
+          cols = Math.min(cols, 6);
+          rows = Math.ceil(totalCards / cols);
+          
           const row = Math.floor(index / cols);
           const col = index % cols;
           
+          // Responsive spacing based on grid size
+          const baseSpacing = 2.2;
+          const spacingMultiplier = Math.max(0.7, 1 - (cols - 3) * 0.1); // Reduce spacing for more columns
+          const horizontalSpacing = baseSpacing * spacingMultiplier;
+          const verticalSpacing = horizontalSpacing * 0.8; // Slightly tighter vertical spacing
+          
           // Center the grid
-          const centerOffset = (cols - 1) / 2;
-          x = (col - centerOffset) * 2.2; // Horizontal spacing
-          y = -(row - centerOffset) * 1.8; // Vertical spacing (inverted for proper layout)
+          const centerOffsetX = (cols - 1) / 2;
+          const centerOffsetY = (rows - 1) / 2;
+          
+          x = (col - centerOffsetX) * horizontalSpacing;
+          y = -(row - centerOffsetY) * verticalSpacing; // Inverted for proper layout
           z = 0; // All cards at the same Z level for flat appearance
           
           // Add very subtle random variation to make it feel more natural
-          x += (Math.random() - 0.5) * 0.1;
-          y += (Math.random() - 0.5) * 0.1;
-          z += (Math.random() - 0.5) * 0.05;
+          x += (Math.random() - 0.5) * 0.05;
+          y += (Math.random() - 0.5) * 0.05;
+          z += (Math.random() - 0.5) * 0.02;
           break;
           
         case 'staggered':

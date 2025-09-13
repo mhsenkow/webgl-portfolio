@@ -1,7 +1,8 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useProjectsContext } from './ProjectsProvider';
 import { useTheme } from './ThemeProvider';
+import { intelligentSearch, getSearchSuggestions } from '@/services/intelligentSearch';
 
 const TAGS = ['Productdesign', 'DataViz', 'AI', 'Music', 'Writing'] as const;
 const LAYOUTS = [
@@ -14,9 +15,39 @@ const LAYOUTS = [
 ] as const;
 
 export default function Hud() {
-  const { query, setQuery, tag, setTag, layout, setLayout, featuredProjects, focusedProject, focusProject, clearFocus } = useProjectsContext();
+  const { query, setQuery, tag, setTag, layout, setLayout, featuredProjects, focusedProject, focusProject, clearFocus, projects } = useProjectsContext();
   const { theme } = useTheme();
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
 
+  // Load search suggestions on mount
+  useEffect(() => {
+    setSearchSuggestions(getSearchSuggestions(projects));
+  }, [projects]);
+
+  // Handle intelligent search on Enter key
+  const handleSearchSubmit = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && query.trim()) {
+      e.preventDefault();
+      setIsSearching(true);
+      
+      try {
+        const bestMatch = await intelligentSearch(query, projects);
+        if (bestMatch) {
+          // Focus on the best matching project
+          focusProject(bestMatch);
+          // Clear the search query
+          setQuery('');
+        }
+      } catch (error) {
+        console.error('Intelligent search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
+
+  // Handle keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -83,13 +114,18 @@ export default function Hud() {
             ? 'border-black bg-white shadow-black/20'
             : 'border-gray-300 bg-white/90'
         }`}>
+        <div className="relative flex-1">
         <input
           id="site-search"
           aria-label="Search projects"
-          placeholder="Search projects…"
+          placeholder={isSearching ? "Searching..." : "Search projects… (Press Enter for intelligent search)"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleSearchSubmit}
+          disabled={isSearching}
           className={`flex-1 bg-transparent outline-none transition-colors duration-300 ${
+            isSearching ? 'opacity-50' : ''
+          } ${
             theme === 'dark' 
               ? 'placeholder:text-gray-400 text-gray-200' 
               : theme === 'high-contrast'
@@ -98,6 +134,42 @@ export default function Hud() {
           }`}
           style={{ fontFamily: 'IBM Plex Sans, system-ui, sans-serif' }}
         />
+        
+        {/* Search suggestions dropdown */}
+        {query && !isSearching && searchSuggestions.length > 0 && (
+          <div className={`absolute top-full left-0 right-0 mt-2 rounded-lg border shadow-lg backdrop-blur transition-all duration-300 ${
+            theme === 'dark' 
+              ? 'border-cyan-400/30 bg-gray-900/95 shadow-cyan-500/20' 
+              : theme === 'high-contrast'
+              ? 'border-black bg-white shadow-black/20'
+              : 'border-gray-300 bg-white/95'
+          }`}>
+            <div className="p-2">
+              <div className={`text-xs font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                Try these searches:
+              </div>
+              {searchSuggestions.slice(0, 3).map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => setQuery(suggestion)}
+                  className={`w-full text-left px-2 py-1 rounded text-sm transition-colors duration-200 ${
+                    theme === 'dark' 
+                      ? 'hover:bg-gray-800 text-gray-300' 
+                      : theme === 'high-contrast'
+                      ? 'hover:bg-gray-100 text-gray-900'
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        </div>
         <div className="flex items-center gap-2">
           {TAGS.map((t) => (
             <button
